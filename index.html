@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tic-tac-toe</title>
+</head>
+<body id="root">
+  <style>
+    html{
+      user-select: none;
+      font-size: 10px;
+      font-family: Arial, Helvetica;
+    }
+    body{
+      background: linear-gradient(0.69turn, #ddd 0%, #333 100%);
+      --matrix: 3;
+    }
+    .grid{
+      width: 50rem;
+      height: 50rem;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      display: grid;
+      grid-template-columns: repeat(var(--matrix), 1fr);
+      justify-items: center;
+      align-items: center;
+    }
+    .cell{
+      position: relative;
+      width: 100%;
+      height: 100%;
+      border: 0.1rem solid black;
+      background-color: rgba(255,255,255,0.27);
+      transition: 0.42s all;
+    }
+    .cell span{
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 13rem;
+    }
+    .cell:hover{
+      background-color: rgba(255,255,255,0.69);
+    }
+    .win{
+      background: #fff;
+      transition: 2s all;
+      font-size: 96px;
+      position: absolute;
+    }
+  </style>
+
+  <section data-grid class="grid">
+    
+
+  </section>
+
+  <script>
+    const $ = (selector) => document.querySelector(selector);
+    const clog = (...str) => console.log(...str);
+
+    const root = $("#root");
+
+    class Cell{
+      #mark;
+
+      constructor(){
+        this.#mark = "";
+      }
+
+      setMark(value){
+        if(value === "X" || value === "O"){
+          this.#mark = value;
+        } else {
+          console.error("noo u cant do that (┬┬﹏┬┬)");
+        }
+      }
+
+      getMark(){
+        return this.#mark;
+      }
+
+      clearMark(){
+        this.#mark = "";
+      }
+
+      static renderCells(cells, selector){
+        selector.innerHTML = ``;
+        for (let i = 0; i < cells.length; i++){
+          const cell = document.createElement("div");
+          cell.classList.add("cell");
+          cell.dataset.cell = i;
+          cell.innerHTML = `<span>${cells[i].getMark()}</span>`;
+          selector.append(cell);
+        }
+      }
+
+      static createGrid(number){
+        root.style.setProperty("--matrix", number);
+        let arr = [];
+        for (let i = 0; i < number * number; i++){
+          arr.push(new Cell);
+        }
+        
+        return arr;
+      }
+    }
+
+    
+    const grid = $("[data-grid]");
+    const matrixSize = 4;
+    const cells = Cell.createGrid(matrixSize);
+   
+    function createPlayer(){
+      let player = "O";
+      return function(){
+        player === "X" ? player = "O" : player = "X";
+        return player;
+      }
+    }
+
+    function win(symbol) {
+      const win = document.createElement("div");
+        win.classList.add("win");
+        win.innerHTML = `${symbol} wins!`;
+        grid.append(win);
+      
+        window.location.href = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'; 
+      
+    }
+
+    function diagWin(symbol) {
+      let right, left
+          rightWin = true, 
+          leftWin = true;
+      
+      for (let i = 1; i <= matrixSize; i++) {
+        right = i * matrixSize - i;
+        left = (i - 1) * (matrixSize + 1);
+        rightWin = rightWin && cells[right].getMark() === symbol;
+        leftWin = leftWin && cells[left].getMark() === symbol;
+      }
+      
+      if(rightWin || leftWin){win(symbol)}
+    }
+
+    function lineWin(symbol) {
+      for (let i = 0; i < matrixSize; i++) {
+        let col, row
+            colWin = true,
+            rowWin = true;
+            
+        for (let j = 0; j < matrixSize; j++) {
+          col = (matrixSize * i - j) + matrixSize - 1;
+          row = (matrixSize * j - i) + matrixSize - 1;
+          colWin = colWin && cells[col].getMark() === symbol;
+          rowWin = rowWin && cells[row].getMark() === symbol;
+        }
+        if(colWin || rowWin){win(symbol)}
+      }
+    }
+
+    function checkWin(symbol) {
+      diagWin(symbol);
+      lineWin(symbol);
+    }
+
+    const player = createPlayer();
+
+    Cell.renderCells(cells, grid);
+    
+    grid.addEventListener("click", ({target} = e) => {
+      const cellId = target.dataset.cell;
+      if(!cellId) return;
+      const cell = cells[cellId];
+      const mark = cell.getMark();
+      if(mark === ""){
+        cell.setMark(player());
+      }
+      Cell.renderCells(cells, grid);
+      checkWin("X");
+      checkWin("O");
+    });
+
+  </script>
+</body>
+</html>
